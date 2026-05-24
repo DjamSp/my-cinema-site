@@ -3,7 +3,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "gunicorn cinema_project.wsgi:application",
+    "startCommand": "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn cinema_project.wsgi:application",
     "healthcheckPath": "/",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
