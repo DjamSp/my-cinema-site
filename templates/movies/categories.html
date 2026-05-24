@@ -1,0 +1,20 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <h1 style="font-family: 'BBH Bartle', sans-serif; margin-bottom: 2rem;">Categories</h1>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+        {% for category in categories %}
+        <div style="background: #ffffff; border: 3px solid rgb(255, 5, 5);border-radius: 10px; padding: 1.5rem;">
+            <h3 style="margin-bottom: 0.5rem;">{{ category.name }}</h3>
+            <p style="color: #e50914; font-size: 0.9rem;">{{ category.movie_set.count }} films</p>
+            <div style="margin-top: 1rem; font-size: 0.8rem; color: #666;">
+                {% for movie in category.movie_set.all|slice:":3" %}
+                <div>{{ movie.title }} ({{ movie.year }})</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

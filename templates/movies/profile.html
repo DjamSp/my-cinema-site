@@ -1,0 +1,141 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+        <!-- Profile Sidebar -->
+        <div>
+            <div style="background: #ffffff; border: 3px solid rgb(255, 5, 5); border-radius: 10px; padding: 1.5rem; text-align: center;">
+                <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #e50914, #ff6b6b); border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                    {{ user.username|first|upper }}
+                </div>
+                <h2>{{ user.username }}</h2>
+                <p class="text-muted">{{ user.email }}</p>
+                <p style="color: #888; font-size: 0.85rem; margin-top: 0.5rem;">{{ user.date_joined|date:"F j, Y" }}</p>
+                
+                <button onclick="toggleEditProfile()" style="background: #ffffff; color: rgb(0, 0, 0); border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 1rem;">
+                    Edit Profile
+                </button>
+            </div>
+            
+            <!-- Collections -->
+            <div style="background: #ffffff; border: 3px solid rgb(255, 5, 5); border-radius: 10px; padding: 1.5rem; margin-top: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>My Collections</h3>
+                    <button onclick="toggleNewCollection()" style="background: #ffffff; border: none; color: rgb(0, 0, 0); padding: 0.25rem 0.75rem; border-radius: 4px; cursor: pointer;">+ New</button>
+                </div>
+                
+                {% for collection in collections %}
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: #ffffff; border-radius: 8px;">
+                    <a href="{% url 'collection_detail' collection.id %}" style="color: rgb(0, 0, 0); text-decoration: none;">
+                        <strong>{{ collection.name }}</strong>
+                        <span style="color: #e50914; font-size: 0.8rem;">({{ collection.movies.count }} films)</span>
+                    </a>
+                    {% if not collection.is_favorite %}
+                    <a href="{% url 'delete_collection' collection.id %}" style="color: #666; font-size: 0.75rem; float: right;"
+                       onclick="return confirm('Delete this collection?')">Delete</a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div>
+            <!-- Ratings -->
+            <div style="background: #ffffff;border: 3px solid rgb(255, 5, 5); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h3 style="margin-bottom: 1rem;">My Ratings & Reviews</h3>
+                {% for rating in ratings|slice:":5" %}
+                <div style="border-bottom: 1px solid #ff0000; padding: 1rem 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <a href="{% url 'detail' rating.movie.id %}" style="color: rgb(0, 0, 0); text-decoration: none; font-weight: 600;">
+                                {{ rating.movie.title }}
+                            </a>
+                            <div style="color: #000000; font-size: 0.9rem;">★ {{ rating.rating }}/10</div>
+                            {% if rating.review %}
+                            <p style="color: #888; font-size: 0.85rem; margin-top: 0.5rem;">"{{ rating.review|truncatechars:100 }}"</p>
+                            {% endif %}
+                        </div>
+                        <div style="color: #666; font-size: 0.75rem;">{{ rating.created_at|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="color: #666;">No ratings yet. Rate some movies!</p>
+                {% endfor %}
+            </div>
+            
+            <!-- Favorites Preview -->
+            <div style="background: #ffffff;border: 3px solid rgb(255, 5, 5); border-radius: 10px; padding: 1.5rem;">
+                <h3 style="margin-bottom: 1rem;">Favorite Movies</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">
+                    {% for movie in favorite_collection.movies.all|slice:":6" %}
+                    <a href="{% url 'detail' movie.id %}" style="text-decoration: none;">
+                        <div style="background: #ffffff; border-radius: 8px; overflow: hidden;">
+                            <img src="{{ movie.poster }}" style="width: 100%; height: 200px; object-fit: cover;">
+                            <div style="padding: 0.5rem; text-align: center;">
+                                <span style="color: rgb(0, 0, 0); font-size: 0.8rem;">{{ movie.title }}</span>
+                            </div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p style="color: #666;">No favorites yet. Add movies to favorites!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.9); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: #ffffff; max-width: 500px; margin: 100px auto; padding: 2rem; border-radius: 10px; border: 3px solid rgb(255, 5, 5);">
+        <h3>Edit Profile</h3>
+        <form method="post" action="{% url 'update_profile' %}">
+            {% csrf_token %}
+            <div style="margin-bottom: 1rem;">
+                <label>Bio</label>
+                <textarea name="bio" rows="4" style="width: 100%; background: #ffffff; border: 1px solid #df0000; color: rgb(0, 0, 0); padding: 0.5rem;">{{ profile.bio }}</textarea>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>Avatar URL</label>
+                <input type="url" name="avatar" value="{{ profile.avatar }}" style="width: 100%; background: #ffffff; border: 1px solid #ff0000; color: rgb(0, 0, 0); padding: 0.5rem;">
+            </div>
+            <button type="submit" style="background: #e50914; border: none; color: white; padding: 0.5rem 1rem; border-radius: 4px;">Save</button>
+            <button type="button" onclick="toggleEditProfile()" style="background: #ffffff; border: none; color: rgb(0, 0, 0); padding: 0.5rem 1rem; border-radius: 4px;">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<!-- New Collection Modal -->
+<div id="newCollectionModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.9); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: #ffffff; max-width: 500px; margin: 100px auto; padding: 2rem; border-radius: 10px; border: 3px solid rgb(255, 5, 5);">
+        <h3>Create New Collection</h3>
+        <form method="post" action="{% url 'create_collection' %}">
+            {% csrf_token %}
+            <div style="margin-bottom: 1rem;">
+                <label>Collection Name</label>
+                <input type="text" name="name" required style="width: 100%; background: #ffffff; border: 1px solid #ff0000; color: rgb(0, 0, 0); padding: 0.5rem;">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>Description (optional)</label>
+                <textarea name="description" rows="3" style="width: 100%; background: #ffffff; border: 1px solid #ff0000; color: rgb(0, 0, 0); padding: 0.5rem;"></textarea>
+            </div>
+            <button type="submit" style="background: #e50914; border: none; color: rgb(0, 0, 0); padding: 0.5rem 1rem; border-radius: 4px;">Create</button>
+            <button type="button" onclick="toggleNewCollection()" style="background: #ffffff; border: none; color: rgb(0, 0, 0); padding: 0.5rem 1rem; border-radius: 4px;">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleEditProfile() {
+        var modal = document.getElementById('editProfileModal');
+        modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    }
+    
+    function toggleNewCollection() {
+        var modal = document.getElementById('newCollectionModal');
+        modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    }
+</script>
+{% endblock %}

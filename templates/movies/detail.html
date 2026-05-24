@@ -1,0 +1,128 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem;">
+        <div>
+            <img src="{{ movie.poster }}" alt="{{ movie.title }}" style="width: 100%; border-radius: 12px;">
+        </div>
+        <div>
+            <h1 style="font-family: 'BBH Bartle', sans-serif; font-size: 3rem; margin-bottom: 1rem;">{{ movie.title }}</h1>
+            
+            <div style="display: flex; gap: 2rem; margin-bottom: 2rem; color: #888;">
+                <span>{{ movie.year }}</span>
+                <span>{{ movie.category.name }}</span>
+                {% if movie.director %}
+                <span>Director: {{ movie.director }}</span>
+                {% endif %}
+            </div>
+            
+            <div style="color: #000000; font-size: 1.5rem; margin-bottom: 0.5rem;">
+                ★ {{ movie.avg_rating|floatformat:1 }}/10
+            </div>
+            <div style="color: #666; margin-bottom: 2rem;">
+                Based on {{ movie.ratings.count }} reviews
+            </div>
+            
+            <div style="line-height: 1.8; margin-bottom: 2rem;">
+                <strong>Description:</strong><br>
+                {{ movie.description }}
+            </div>
+            
+            {% if user.is_authenticated %}
+            <!-- Rating and Review Section -->
+            <div style="background: #ffffff; padding: 1.5rem; border-radius: 10px;border: 3px solid rgb(255, 5, 5); margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">Your Rating & Review</h3>
+                <form method="post" action="{% url 'add_rating' movie.id %}">
+                    {% csrf_token %}
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">Your Rating (1-10)</label>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            {% for i in "12345678910"|make_list %}
+                            <label style="cursor: pointer;">
+                                <input type="radio" name="rating" value="{{ forloop.counter }}" 
+                                       {% if user_rating == forloop.counter %}checked{% endif %}
+                                       style="margin-right: 0.25rem;"> {{ forloop.counter }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">Your Review</label>
+                        <textarea name="review" rows="4" style="width: 100%; background: #ffffff; border: 3px solid rgb(255, 5, 5); color: rgb(0, 0, 0); padding: 0.75rem; border-radius: 4px;">{{ user_review }}</textarea>
+                    </div>
+                    <button type="submit" style="background: #e50914; border: none; color: white; padding: 0.5rem 1.5rem; border-radius: 4px; cursor: pointer;">
+                        Submit Rating
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Add to Collections -->
+            <div style="background: #ffffff; padding: 1.5rem; border: 3px solid rgb(255, 5, 5);border-radius: 10px; margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">Add to Collections</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    {% for collection in user.collections.all %}
+                    <a href="{% url 'add_to_collection' collection.id movie.id %}" 
+                       style="background: #fcfcfc; color: rgb(0, 0, 0); padding: 0.5rem 1rem; border-radius: 20px; text-decoration: none; font-size: 0.85rem;">
+                        {{ collection.name }} 
+                        {% if movie in collection.movies.all %}✓{% endif %}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Favorite Button -->
+            <div style="margin-bottom: 2rem;">
+                <a href="{% url 'add_to_favorites' movie.id %}" 
+                   style="background: #ffffff; color: rgb(0, 0, 0); padding: 0.75rem 1.5rem; border: 1px solid rgb(255, 5, 5); border-radius: 8px; text-decoration: none; display: inline-block;">
+                    Add to Favorites
+                </a>
+            </div>
+            {% else %}
+            <div style="background: #ffffff; padding: 1.5rem; border: 3px solid rgb(255, 5, 5);border-radius: 10px; text-align: center;">
+                <p style="color: #888;">Login to rate, review, and add this movie to your collections!</p>
+                <a href="/login/" style="background: #e50914; color: rgb(0, 0, 0); padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; display: inline-block; margin-top: 0.5rem;">Login</a>
+            </div>
+            {% endif %}
+            
+            {% if movie.actors.exists %}
+            <div style="margin-top: 2rem;">
+                <h3 style="font-family: 'BBH Bartle', sans-serif; margin-bottom: 1rem;">Full Cast</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                    {% for actor in movie.actors.all %}
+                    <div style="background: #ffffff; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgb(255, 5, 5);">
+                        {{ actor.name }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Reviews from other users -->
+            <div style="margin-top: 3rem;">
+                <h3 style="font-family: 'BBH Bartle', sans-serif; margin-bottom: 1rem;">User Reviews</h3>
+                {% for rating in movie.ratings.all|slice:":5" %}
+                <div style="background: #ffffff; padding: 1rem;border: 3px solid rgb(255, 5, 5); border-radius: 8px; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>{{ rating.user.username }}</strong>
+                        <span style="color: #000000;">★ {{ rating.rating }}/10</span>
+                    </div>
+                    {% if rating.review %}
+                    <p style="color: #000000;">{{ rating.review }}</p>
+                    {% endif %}
+                    <small style="color: #666;">{{ rating.created_at|date:"F j, Y" }}</small>
+                </div>
+                {% empty %}
+                <p style="color: #888;">No reviews yet. Be the first to review!</p>
+                {% endfor %}
+            </div>
+            
+            <div style="margin-top: 3rem;">
+                <a href="/" style="color: #e50914; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                    ← Back to films
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

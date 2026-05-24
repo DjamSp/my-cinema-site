@@ -1,0 +1,54 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="font-family: 'BBH Bartle', sans-serif;">Admin Panel</h1>
+        <div>
+            <a href="{% url 'add_movie' %}" style="background: #e50914; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px; margin-right: 1rem;">Add Movie</a>
+            <a href="{% url 'logout' %}" style="background: #000000; color: rgb(255, 255, 255); padding: 0.5rem 1rem; text-decoration: none; border-radius: 4px;">Logout</a>
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div style="background: #ffffff; padding: 1.5rem; border: 3px solid rgb(255, 5, 5); border-radius: 10px;">
+            <h3>Statistics</h3>
+            <p style="font-size: 2rem; color: #e50914;">{{ movies.count }}</p>
+            <p>Total Movies</p>
+        </div>
+        <div style="background: #ffffff; padding: 1.5rem;border: 3px solid rgb(255, 5, 5); border-radius: 10px;">
+            <h3>Categories</h3>
+            <p style="font-size: 2rem; color: #e50914;">{{ categories.count }}</p>
+            <p>Total Categories</p>
+        </div>
+    </div>
+    
+    <div style="background: #ffffff; border-radius: 12px; overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #ffffff;">
+                    <th style="padding: 1rem; text-align: left;">Title</th>
+                    <th style="padding: 1rem; text-align: left;">Year</th>
+                    <th style="padding: 1rem; text-align: left;">Director</th>
+                    <th style="padding: 1rem; text-align: left;">Rating</th>
+                    <th style="padding: 1rem; text-align: left;">Actions</th>
+                 </tr>
+            </thead>
+            <tbody>
+                {% for movie in movies %}
+                <tr style="border-bottom: 1px solid #222;">
+                    <td style="padding: 1rem;">{{ movie.title }}</td>
+                    <td style="padding: 1rem;">{{ movie.year }}</td>
+                    <td style="padding: 1rem;">{{ movie.director|default:'-' }}</td>
+                    <td style="padding: 1rem;">{{ movie.rating }}</td>
+                    <td style="padding: 1rem;">
+                        <a href="{% url 'edit_movie' movie.id %}" style="color: #ff0000; text-decoration: none; margin-right: 1rem;">Edit</a>
+                        <a href="{% url 'delete_movie' movie.id %}" style="color: #000000; text-decoration: none;" onclick="return confirm('Delete this movie?')">Delete</a>
+                    </td>
+                 </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

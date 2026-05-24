@@ -1,0 +1,21 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <h1 style="font-family: 'BBH Bartle', sans-serif; margin-bottom: 2rem;">Actors</h1>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
+        {% for actor in actors %}
+        <div style="background: #ffffff;border: 3px solid rgb(255, 5, 5); border-radius: 10px; padding: 1.5rem; text-align: center;">
+            {% if actor.photo %}
+            <img src="{{ actor.photo }}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem;">
+            {% else %}
+            <div style="width: 100px; height: 100px; background: #ffffff; border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 3rem;"></div>
+            {% endif %}
+            <h3 style="margin-bottom: 0.5rem;">{{ actor.name }}</h3>
+            <p style="color: #666; font-size: 0.85rem;">{{ actor.bio|truncatechars:80 }}</p>
+            <p style="color: #ff0000; margin-top: 1rem; font-size: 0.8rem;">{{ actor.movies.count }} films</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

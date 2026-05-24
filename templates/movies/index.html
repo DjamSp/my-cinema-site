@@ -1,0 +1,50 @@
+﻿{% extends 'base.html' %}
+
+{% block content %}
+<div class="masonry-grid">
+    {% for movie in movies %}
+    <div class="movie-card">
+        <img src="{{ movie.poster }}" alt="{{ movie.title }}">
+        <div class="movie-info">
+            <h3 class="movie-title">{{ movie.title }}</h3>
+            <div class="movie-meta">
+                <span>{{ movie.year }}</span>
+                <span>{{ movie.category.name }}</span>
+            </div>
+            <div class="movie-rating">★ {{ movie.rating }}/5</div>
+            
+            {% if movie.director %}
+            <div class="director">
+                Director: {{ movie.director }}
+            </div>
+            {% else %}
+            <div class="director" style="color: #666;">
+                Director: Not specified
+            </div>
+            {% endif %}
+            
+            {% if movie.actors.exists %}
+            <div class="actors-preview">
+                Cast: 
+                {% for actor in movie.actors.all|slice:":3" %}
+                    {{ actor.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% if movie.actors.count > 3 %}...{% endif %}
+            </div>
+            {% else %}
+            <div class="actors-preview" style="color: #666;">
+                Cast: No actors added yet
+            </div>
+            {% endif %}
+            
+            <a href="{% url 'detail' movie.id %}" class="btn-detail">View details →</a>
+        </div>
+    </div>
+    {% empty %}
+    <div style="text-align: center; padding: 4rem; grid-column: 1/-1;">
+        <h3>No films found</h3>
+        <p>Try a different search term</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
